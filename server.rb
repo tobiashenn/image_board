@@ -18,7 +18,7 @@ set :server, :puma
 set :markdown, :layout_engine => :haml, :layout => :layout
 set :haml, :format => :html5
 WillPaginate.per_page = 10
-secrets_yaml = YAML.load_file('config/config.yml')
+config = YAML.load_file('config/config.yml')
 
 CarrierWave.configure do |config|
   amazon_S3_config = YAML.load_file('config/fog_amazon_S3.yml')
@@ -35,10 +35,10 @@ end
 
 # STARTUP PROCEDURES
 puts "Engine started with Ruby Version #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}"
-signup_hash = secrets_yaml['hash']
+signup_hash = config['hash']
 CarrierWave.clean_cached_files!
 
-use Rack::Session::Cookie, :secret => secrets_yaml['cookie_secret']
+use Rack::Session::Cookie, :secret => config['cookie_secret']
 DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/image_board.db")
 
 # MODELS
@@ -72,7 +72,7 @@ class User
   property :privilege_lvl, Integer, :default  => 0 
   property :name, String, :unique => true
   property :password_hash, BCryptHash
-  property :email, String, :required => true, :unique => true, :format => :email_address, :default => "mail@host.com"
+  property :email, String, :required => true, :unique => true, :format => :email_address
   has n, :images
   has n, :comments
   has n, :favs
