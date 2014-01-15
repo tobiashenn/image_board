@@ -1,0 +1,30 @@
+%div.container
+	%div.page-header
+		%h1 
+			= "#{@user.name}'s uploads:"
+
+%div.container
+	-@images.each do |image|
+		%p
+			%a{href: "/images/#{image.id}"}
+				%img.img-rounded.img-responsive{:src => "#{image.file.deliver.url}", :width => "600"}
+			-@user = image.user
+			-@num_of_comments = image.comments.count
+			-@num_of_stars = image.favs.count
+			-@time_string = image.posted_at.strftime("%d/%m/%Y %H:%M")
+			%div
+				="Uploaded at #{@time_string} by" 
+				%a{href: "/users/#{@user.id}"} #{@user.name}
+				="&nbsp"
+				%a{href: "/images/#{image.id}"} #{@num_of_comments} #{pluralize(@num_of_comments,"comment")}
+				="&nbsp"
+				%a{href: "/images/#{image.id}"}
+					="faved by #{@num_of_stars} #{pluralize(@num_of_stars,"user")}"
+				-if not ( has_faved_image?(image) or is_own_image?(image) )
+					%form.form-inline{:action => "/fav_image/#{image.id}", :method => "post", :role => "form"}
+						%div.form-group
+							%button.btn.btn-sm.btn-primary{:type => "submit"}
+								%span.glyphicon.glyphicon-star
+				
+	%div.digg_pagination
+		= will_paginate(@images,:previous_label => '&laquo; Newer', :next_label => 'Older &raquo;', renderer: BootstrapPagination::Sinatra)

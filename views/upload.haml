@@ -1,0 +1,7 @@
+%div.container
+  %h3 Upload new image!
+  %form{:method => "post", :enctype => 'multipart/form-data'}
+    %div.form-group
+      %input{:type => "file",:name => "myfile"}
+    %div.form-group
+      %input.btn.btn-primary{:type => "submit", :value => "Upload!"}

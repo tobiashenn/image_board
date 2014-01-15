@@ -1,0 +1,21 @@
+%div.container
+  %h1 Time to sign up!
+  %form{:action => "/signup", :method => "post", :role => "form", :width => "40%"}
+    %div.formgroup
+    %label
+      Username
+      %input.form-control{:type => "text",:size => "20", :name => "username", :placeholder => "Username"}
+    %div.formgroup
+    %label
+      Email
+      %input.form-control{:type => "text",:size => "20", :name => "email", :placeholder => "Email address"}
+    %div.formgroup
+    %label
+      Password
+      %input.form-control{:type => "password",:size => "20", :name => "password", :placeholder => "Password"}
+    %div.formgroup
+    %label
+      Sign-up code
+      %input.form-control{:type => "password",:size => "20", :name => "signupcode", :placeholder => "Sign-up code"}
+    %div.formgroup
+      %input.btn.btn-primary{:type => "submit", :value => "Sign up!"}

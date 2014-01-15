@@ -1,0 +1,12 @@
+%nav.navbar.navbar-default.navbar-fixed-bottom{role: "signout"}
+	%ul.nav{:style => "padding-left:10px"}
+		-if login?
+			%li
+				%form.navbar-form{:action => "/logout", :method => "get"}
+					%input.btn.btn-small.btn-danger{:type => "submit", :value => "Logout!"}
+		-else
+			%li
+				%form.navbar-form{:action => "/login", :method => "post"}
+					%input.input-medium{:type => "text",:size => "20", :name => "username", :placeholder => "User"}
+					%input.input-medium{:type => "password",:size => "20", :name => "password", :placeholder => "Password"}
+					%input.btn.btn-small.btn-success{:type => "submit", :value => "Sign in!"}

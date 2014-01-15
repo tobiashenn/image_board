@@ -1,0 +1,6 @@
+.container
+  -if login?
+    %div= haml :main
+	
+  -if not login?
+    %div= haml :welcome

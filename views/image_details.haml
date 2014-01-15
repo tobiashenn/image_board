@@ -1,0 +1,45 @@
+%div.container
+	%p
+		%a{href: "#{@image.file.url}"}
+			%img.img-rounded.img-responsive{:src => "#{@image.file.deliver.url}", :width => "800"}
+		-@owner = @image.user
+		-@comments = @image.comments.all
+		-@time_string = @image.posted_at.strftime("%d/%m/%Y %H:%M")
+		="Uploaded at #{@time_string} by" 
+		%a{href: "/users/#{@owner.id}"} #{@owner.name}
+		-if not ( has_faved_image?(@image) or is_own_image?(@image) )
+			%form.form-inline{:action => "/fav_image/#{@image.id}", :method => "post", :role => "form"}
+				%div.form-group
+					%button.btn.btn-sm.btn-primary{:type => "submit"}
+						%span.glyphicon.glyphicon-star
+		
+%div.container
+	%p
+		-if ( @fav_list.length > 0 )
+			="Faved by:"
+			-@fav_list.each do |fav|
+				%a{href: "/users/#{fav.user.id}"} #{fav.user.name}
+
+%div.container
+	-@comments.each do |comment|
+		%div.well.well-sm{:style => "max-width:800px"}
+			%em
+				%b="#{comment.text}"
+			%p
+				%small
+					="posted at #{comment.posted_at.strftime("%d/%m/%Y %H:%M")} by"
+					%a{href: "/users/#{comment.user.id}"} #{comment.user.name}
+
+%div.container
+	%form.form-inline{:action => "/comments/#{@image.id}", :method => "post", :role => "form"}
+		%div.formgroup
+			%input.form-control{:type => "text",:size => "140", :name => "comment", :placeholder => "New comment: 1024 characters maximum...", :style => "max-width:800px"}
+		%div.formgroup{:style => "padding-top:10px"}
+			%input.btn.btn-primary{:type => "submit", :value => "Post comment!"}
+			
+%div.container
+	-if admin?
+		%form{:action => "/delete_image/#{@image.id}", :method => "post", :role => "form"}
+			%div.form-group
+				%input.btn.btn-sm.btn-danger{:type => "submit", :value => "Delete image!"}
+			

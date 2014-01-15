@@ -1,0 +1,9 @@
+%h1 Sign in!
+%form{:action => "/login", :method => "post"}
+	%fieldset
+		%div
+			%input{:type => "text",:size => "20", :name => "username", :placeholder => "User"}
+		%div
+			%input{:type => "password",:size => "20", :name => "password", :placeholder => "Password"}
+		%div
+			%input.btn{:type => "submit", :value => "Sign in!"}
