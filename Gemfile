@@ -14,7 +14,6 @@ gem 'dm-sqlite-adapter'
 gem 'mini_magick'
 gem 'fog'
 gem 'unf'
-gem'yaml'
 
 #gem 'pg'
 #gem 'dm-postgres-adapter'
