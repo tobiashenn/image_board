@@ -18,13 +18,12 @@ set :server, :puma
 set :markdown, :layout_engine => :haml, :layout => :layout
 set :haml, :format => :html5
 WillPaginate.per_page = 10
-config = YAML.load_file('config/config.yml')
+config_yaml = YAML.load_file('config/config.yml')
 
 CarrierWave.configure do |config|
   amazon_S3_config = YAML.load_file('config/fog_amazon_S3.yml')
   config.fog_credentials = amazon_S3_config.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
-  config.fog_directory  = 'ibs3bucket'
-  config.fog_public     = true
+  config.fog_directory  = config_yaml['S3bucket']
 end
 
 configure :ocean do
@@ -35,10 +34,10 @@ end
 
 # STARTUP PROCEDURES
 puts "Engine started with Ruby Version #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}"
-signup_hash = config['hash']
+signup_hash = config_yaml['hash']
 CarrierWave.clean_cached_files!
 
-use Rack::Session::Cookie, :secret => config['cookie_secret']
+use Rack::Session::Cookie, :secret => config_yaml['cookie_secret']
 DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/image_board.db")
 
 # MODELS
