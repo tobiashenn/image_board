@@ -34,7 +34,7 @@ end
 
 # STARTUP PROCEDURES
 puts "Engine started with Ruby Version #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}"
-signup_hash = config_yaml['hash']
+signup_hash = config_yaml['signup_hash']
 CarrierWave.clean_cached_files!
 
 use Rack::Session::Cookie, :secret => config_yaml['cookie_secret']
@@ -55,7 +55,7 @@ class ImageUploader < CarrierWave::Uploader::Base
   end
     
   def filename
-       "#{secure_token}.#{file.extension}" if original_filename.present?
+    "#{secure_token}.#{file.extension}" if original_filename.present?
   end
 
   protected
@@ -109,11 +109,7 @@ DataMapper.finalize.auto_upgrade!
 # HELPERS
 helpers do
   def login?
-    if session[:username].nil?
-      return false
-    else
-      return true
-    end
+    return true unless session[:username].nil?
   end
   
   def pluralize(n, singular, plural=nil)
@@ -153,6 +149,14 @@ helpers do
   end
 end
 
+# FILTERS
+before do
+  pass if ['/', '/signup', '/login', '/logout'].include?( request.path_info )
+  if not login?
+    redirect '/'
+  end
+end
+
 # ROUTES
 get '/' do
   if login?
@@ -162,25 +166,20 @@ get '/' do
 end
 
 post'/comments/:id' do
-  if login?
-    image = Image.first(:id => params[:id])
-    user = User.first(:name => session[:username])
-    comment = Rinku.auto_link(Sanitize.clean(params['comment']), mode=:all, link_attr=nil, skip_tags=nil)
-    Comment.create(:image => image, :user => user, :text => comment, :posted_at => Time.now)
-  end
+  image = Image.first(:id => params[:id])
+  user = User.first(:name => session[:username])
+  comment = Rinku.auto_link(Sanitize.clean(params['comment']), mode=:all, link_attr=nil, skip_tags=nil)
+  Comment.create(:image => image, :user => user, :text => comment, :posted_at => Time.now)
   redirect back
 end
 
 get '/current_user_profile' do
-  if login?
     user = User.first(:name => session[:username])
     redirect "/users/#{user.id}"
-  end
-  redirect '/'
 end
 
 post '/delete_image/:id' do
-  if (login? and admin?)
+  if admin?
     if (image = Image.first(:id => params[:id]))
       image.comments.each do |comment|
         comment.destroy!
@@ -194,7 +193,7 @@ post '/delete_image/:id' do
 end
 
 get '/destroy' do
-  if (login? and admin?)
+  if admin?
     haml :destroy
   else
     redirect '/'
@@ -202,7 +201,7 @@ get '/destroy' do
 end
 
 post '/destroy' do
-  if (login? and admin?)
+  if admin?
     Image.all.each do |image|
       image.destroy!
     end    
@@ -214,33 +213,23 @@ post '/destroy' do
 end
 
 post '/fav_image/:id' do
-  if login?
-    image = Image.first(:id => params[:id])
-    if not ( has_faved_image?(image) or is_own_image?(image) )
-      user = User.first(:name => session[:username])
-      Fav.create(:image => image, :user => user)
-    end
+  image = Image.first(:id => params[:id])
+  if not ( has_faved_image?(image) or is_own_image?(image) )
+    user = User.first(:name => session[:username])
+    Fav.create(:image => image, :user => user)
   end
   redirect back
 end
 
 get '/images' do 
-  if login?
-    @images = Image.paginate(:page => params[:page],:order => [ :posted_at.desc ])
-    haml :images
-  else
-    redirect '/'
-  end
+  @images = Image.paginate(:page => params[:page],:order => [ :posted_at.desc ])
+  haml :images
 end
 
 get '/images/:id' do
-  if login?
-    @image = Image.first(:id => params[:id])
-    @fav_list = Fav.all(:image => @image)
-    haml :image_details
-  else
-    redirect '/'
-  end
+  @image = Image.first(:id => params[:id])
+  @fav_list = Fav.all(:image => @image)
+  haml :image_details
 end
 
 post '/login' do
@@ -261,7 +250,7 @@ get '/logout' do
 end
 
 get '/recreate_versions' do
-  if (login? and admin?)
+  if admin?
     Image.all.each do |image|
       puts image.file.recreate_versions!
     end
@@ -292,40 +281,26 @@ post '/signup' do
 end
 
 get '/upload' do
-  if login?
-    haml :upload
-  else
-    redirect '/'
-  end
+  haml :upload
 end
  
 post '/upload' do 
-  if login?
-    user = User.first(:name => session[:username])
-    if not valid_ext?( File.extname(params['myfile'][:filename]).downcase )
-      flash[:error] = "Wrong file type - not uploaded!"
-      redirect '/images'
-    end
-    Image.create(:user => user, :file => params['myfile'], :posted_at => Time.now)
+  user = User.first(:name => session[:username])
+  if not valid_ext?( File.extname(params['myfile'][:filename]).downcase )
+    flash[:error] = "Wrong file type - not uploaded!"
+    redirect '/images'
   end
+  Image.create(:user => user, :file => params['myfile'], :posted_at => Time.now)
   redirect '/images'
 end
 
 get '/users' do
-  if login?
-    @users = User.all
-    haml :user_list
-  else
-    redirect '/'
-  end
+  @users = User.all
+  haml :user_list
 end
 
 get '/users/:id' do
-  if login?
-    @user = User.first(:id => params[:id])
-    @images = @user.images.paginate(:page => params[:page],:order => [ :posted_at.desc ])
-    haml :user_profile
-  else
-    redirect '/'
-  end
+  @user = User.first(:id => params[:id])
+  @images = @user.images.paginate(:page => params[:page],:order => [ :posted_at.desc ])
+  haml :user_profile
 end
