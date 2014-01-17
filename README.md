@@ -61,4 +61,4 @@ Try the app by starting the server with
 
 	ruby server.rb
 	
-Browse to `http://localhost:4567`, create your account and start posting images!
+Browse to `http://localhost:4567`, create your account, and start posting images!
