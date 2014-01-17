@@ -151,7 +151,7 @@ before do
   end
 end
 
-# ROUTES
+# PUBLIC ROUTES
 get '/' do
   if login?
     redirect '/images'
@@ -170,40 +170,6 @@ end
 get '/current_user_profile' do
     user = User.first(:name => session[:username])
     redirect "/users/#{user.id}"
-end
-
-post '/delete_image/:id' do
-  if admin?
-    if (image = Image.first(:id => params[:id]))
-      image.comments.each do |comment|
-        comment.destroy!
-      end
-      image.remove_file!
-      image.destroy!
-    end
-  flash[:error] = "Image deleted!"
-  end
-  redirect '/'
-end
-
-get '/destroy' do
-  if admin?
-    haml :destroy
-  else
-    redirect '/'
-  end
-end
-
-post '/destroy' do
-  if admin?
-    Image.all.each do |image|
-      image.destroy!
-    end    
-    DataMapper.auto_migrate!
-    CarrierWave.clean_cached_files!
-    flash[:error] = "Database reset!"
-  end
-  redirect '/logout'
 end
 
 post '/fav_image/:id' do
@@ -240,15 +206,6 @@ end
 
 get '/logout' do
   session[:username] = nil
-  redirect '/'
-end
-
-get '/recreate_versions' do
-  if admin?
-    Image.all.each do |image|
-      puts image.file.recreate_versions!
-    end
-  end
   redirect '/'
 end
 
@@ -297,4 +254,48 @@ get '/users/:id' do
   @user = User.first(:id => params[:id])
   @images = @user.images.paginate(:page => params[:page],:order => [ :posted_at.desc ])
   haml :user_profile
+end
+
+#ADMINISTRATION ROUTES
+post '/delete_image/:id' do
+  if admin?
+    if (image = Image.first(:id => params[:id]))
+      image.comments.each do |comment|
+        comment.destroy!
+      end
+      image.remove_file!
+      image.destroy!
+    end
+  flash[:error] = "Image deleted!"
+  end
+  redirect '/'
+end
+
+get '/destroy' do
+  if admin?
+    haml :destroy
+  else
+    redirect '/'
+  end
+end
+
+post '/destroy' do
+  if admin?
+    Image.all.each do |image|
+      image.destroy!
+    end    
+    DataMapper.auto_migrate!
+    CarrierWave.clean_cached_files!
+    flash[:error] = "Database reset!"
+  end
+  redirect '/logout'
+end
+
+get '/recreate_image_versions' do
+  if admin?
+    Image.all.each do |image|
+      puts image.file.recreate_versions!
+    end
+  end
+  redirect '/'
 end
