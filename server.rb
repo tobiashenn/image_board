@@ -48,11 +48,6 @@ class ImageUploader < CarrierWave::Uploader::Base
     process resize_to_limit: [800, 10000]
   end
     
-  def md5
-    uploaded_file = model.send(mounted_as)
-    @md5 ||= Digest::MD5.hexdigest(uploaded_file.read)
-  end
-    
   def filename
     "#{secure_token}.#{file.extension}" if original_filename.present?
   end
