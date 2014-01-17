@@ -22,7 +22,7 @@ config_yaml = YAML.load_file('config/config.yml')
 
 CarrierWave.configure do |config|
   amazon_S3_config = YAML.load_file('config/fog_amazon_S3.yml')
-  config.fog_credentials = amazon_S3_config.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
+  config.fog_credentials = amazon_S3_config.inject({}){|acc, (k,v)| acc[k.to_sym] = v; acc}
   config.fog_directory  = config_yaml['S3bucket']
 end
 
@@ -34,7 +34,6 @@ end
 
 # STARTUP PROCEDURES
 puts "Engine started with Ruby Version #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}"
-signup_hash = config_yaml['signup_hash']
 CarrierWave.clean_cached_files!
 
 use Rack::Session::Cookie, :secret => config_yaml['cookie_secret']
@@ -268,7 +267,7 @@ post '/signup' do
       flash[:error] = "No valid email address given!"
       redirect back
     end
-    if BCrypt::Password.new(signup_hash) == params[:signupcode]   
+    if config_yaml['signup_code'] == params[:signupcode]   
       password_hash = BCrypt::Password.create(params[:password])  
       User.create(:name => params[:username], :password_hash => password_hash, :email => params[:email])
       session[:username] = params[:username]
