@@ -3,7 +3,7 @@ Simple *Instagram*-like **Sinatra Ruby web app** for posting images to your frie
 
 The app currently provides user authentication and registration, image upload & storage, comments and favs. 
 
-The main purpose of this project for me is learning to develop simple web applications. Even if you are not specifically interested in image sharing, you can probably still find many components which you can resuse in or adapt to your own projects.
+The main purpose of this project for me is learning to develop simple web applications. Even if you are not specifically interested in image sharing, you can probably still find many components which you can adapt and re-use in your own projects.
 
 **This is an self-education project. If you find horrible bugs, security flaws, design decisions etc. please let me know!**
 
