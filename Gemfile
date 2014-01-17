@@ -14,11 +14,3 @@ gem 'dm-sqlite-adapter'
 gem 'mini_magick'
 gem 'fog'
 gem 'unf'
-
-#gem 'pg'
-#gem 'dm-postgres-adapter'
-
-# database gems
-#group :deployment do
-#  gem 'dm-postgres-adapter'
-#end
