@@ -147,6 +147,23 @@ helpers do
   def favs_received(user)
     user.images.reduce(0){|favs, image| favs + image.favs.count}
   end
+  
+  def add_exif_data(image)
+    exif_data = EXIFR::JPEG.new(open(image.file.url))
+    if not exif_data.model.nil?
+      image.exif_model = exif_data.model.to_s
+    end
+    if not exif_data.iso_speed_ratings.nil?
+      image.exif_iso =  exif_data.iso_speed_ratings.to_s
+    end
+    if not exif_data.f_number.nil?
+      image.exif_aperture = exif_data.f_number.to_f.to_s
+    end
+    if not exif_data.exposure_time.nil?
+      image.exif_shutterspeed = exif_data.exposure_time.to_s
+    end
+    image.save
+  end
 end
 
 # FILTERS
@@ -248,20 +265,7 @@ post '/upload' do
     redirect '/images'
   end
   image = Image.create(:user => user, :file => params['myfile'], :posted_at => Time.now)
-  exif_data = EXIFR::JPEG.new(open(image.file.url))
-  if not exif_data.model.nil?
-    image.exif_model = exif_data.model.to_s
-  end
-  if not exif_data.iso_speed_ratings.nil?
-    image.exif_iso =  exif_data.iso_speed_ratings.to_s
-  end
-  if not exif_data.f_number.nil?
-    image.exif_aperture = exif_data.f_number.to_f.to_s
-  end
-  if not exif_data.exposure_time.nil?
-    image.exif_shutterspeed = exif_data.exposure_time.to_s
-  end
-  image.save
+  add_exif_data(image)
   redirect '/images'
 end
 
@@ -323,21 +327,7 @@ end
 get '/update_exif' do
   if admin?
     Image.all.each do |image|
-      puts image.file.url
-      exif_data = EXIFR::JPEG.new(open(image.file.url))
-      if not exif_data.model.nil?
-        image.exif_model = exif_data.model.to_s
-      end
-      if not exif_data.iso_speed_ratings.nil?
-        image.exif_iso =  exif_data.iso_speed_ratings.to_s
-      end
-      if not exif_data.f_number.nil?
-        image.exif_aperture = exif_data.f_number.to_f.to_s
-      end
-      if not exif_data.exposure_time.nil?
-        image.exif_shutterspeed = exif_data.exposure_time.to_s
-      end
-      image.save
+      add_exif_data(image)
     end
   end
   redirect '/'
