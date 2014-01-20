@@ -127,17 +127,11 @@ helpers do
   end
   
   def admin?
-    user = User.first(:name => session[:username])
-    user.privilege_lvl == 99
+    User.first(:name => session[:username]).privilege_lvl == 99
   end
   
   def has_faved_image?(image)
-    user = User.first(:name => session[:username])
-    if Fav.all(:user => user, :image => image).count > 0 
-      return true
-    else
-      return false
-    end
+    return true if Fav.all(:user => User.first(:name => session[:username]), :image => image).count > 0
   end
   
   def is_own_image?(image)
@@ -182,7 +176,7 @@ get '/' do
   haml :index
 end
 
-post'/comments/:id' do
+post '/comments/:id' do
   image = Image.first(:id => params[:id])
   user = User.first(:name => session[:username])
   comment = Rinku.auto_link(Sanitize.clean(params['comment']), mode=:all, link_attr=nil, skip_tags=nil)
@@ -191,17 +185,20 @@ post'/comments/:id' do
 end
 
 get '/current_user_profile' do
-    user = User.first(:name => session[:username])
+  if user = User.first(:name => session[:username])
     redirect "/users/#{user.id}"
+  end
+  redirect back
 end
 
 post '/fav_image/:id' do
-  image = Image.first(:id => params[:id])
-  if not ( has_faved_image?(image) or is_own_image?(image) )
-    user = User.first(:name => session[:username])
-    Fav.create(:image => image, :user => user)
+  if image = Image.first(:id => params[:id])
+    if not ( has_faved_image?(image) or is_own_image?(image) )
+      user = User.first(:name => session[:username])
+      Fav.create(:image => image, :user => user)
+    end
   end
-  redirect back
+  redirect '/'
 end
 
 get '/images' do 
@@ -210,14 +207,16 @@ get '/images' do
 end
 
 get '/images/:id' do
-  @image = Image.first(:id => params[:id])
-  @fav_list = Fav.all(:image => @image)
-  haml :image_details
+  if @image = Image.first(:id => params[:id])
+    @fav_list = Fav.all(:image => @image)
+    haml :image_details
+  else
+    redirect '/'
+  end
 end
 
 post '/login' do
-  @user = User.first(:name => params[:username])
-  if @user
+  if @user = User.first(:name => params[:username])
     if BCrypt::Password.new(@user[:password_hash]) == params[:password]
       session[:username] = params[:username]
       redirect '/images'
@@ -259,12 +258,11 @@ get '/upload' do
 end
  
 post '/upload' do 
-  user = User.first(:name => session[:username])
   if not valid_ext?( File.extname(params['myfile'][:filename]).downcase )
     flash[:error] = "Wrong file type - not uploaded!"
     redirect '/images'
   end
-  image = Image.create(:user => user, :file => params['myfile'], :posted_at => Time.now)
+  image = Image.create(:user => User.first(:name => session[:username]), :file => params['myfile'], :posted_at => Time.now)
   add_exif_data(image)
   redirect '/images'
 end
