@@ -5,8 +5,18 @@
 		-@owner = @image.user
 		-@comments = @image.comments.all
 		-@time_string = @image.posted_at.strftime("%d/%m/%Y %H:%M")
-		="Uploaded at #{@time_string} by" 
-		%a{href: "/users/#{@owner.id}"} #{@owner.name}
+		%p
+			="Uploaded at #{@time_string} by" 
+			%a{href: "/users/#{@owner.id}"} #{@owner.name}
+		%p
+			-if not @image.exif_model.nil?
+				="#{@image.exif_model},"
+			-if not @image.exif_shutterspeed.nil?
+				="#{@image.exif_shutterspeed} s,"
+			-if not @image.exif_aperture.nil?
+				="f/#{@image.exif_aperture},"
+			-if not @image.exif_iso.nil?
+				="ISO #{@image.exif_iso}"
 		-if not ( has_faved_image?(@image) or is_own_image?(@image) )
 			%form.form-inline{:action => "/fav_image/#{@image.id}", :method => "post", :role => "form"}
 				%div.form-group

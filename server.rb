@@ -12,6 +12,8 @@ require 'json'
 require 'ValidateEmail'
 require 'rinku'
 require 'yaml'
+require 'open-uri'
+require 'exifr'
 
 # CONFIGURATION
 set :server, :puma
@@ -73,10 +75,14 @@ end
 
 class Image
   include DataMapper::Resource
-  property :id, Serial
   mount_uploader :file, ImageUploader
-  belongs_to :user
+  property :id, Serial
   property :posted_at, DateTime
+  property :exif_model, String
+  property :exif_aperture, String
+  property :exif_shutterspeed, String
+  property :exif_iso, String
+  belongs_to :user
   has n, :comments
   has n, :favs
 end
@@ -241,7 +247,23 @@ post '/upload' do
     flash[:error] = "Wrong file type - not uploaded!"
     redirect '/images'
   end
-  Image.create(:user => user, :file => params['myfile'], :posted_at => Time.now)
+  image = Image.create(:user => user, :file => params['myfile'], :posted_at => Time.now)
+  puts image.file.url
+  exif_data = EXIFR::JPEG.new(open(image.file.url))
+  puts exif_data.model
+  if not exif_data.model.nil?
+    image.exif_model = exif_data.model.to_s
+  end
+  if not exif_data.iso_speed_ratings.nil?
+    image.exif_iso =  exif_data.iso_speed_ratings.to_s
+  end
+  if not exif_data.f_number.nil?
+    image.exif_aperture = exif_data.f_number.to_f.to_s
+  end
+  if not exif_data.exposure_time.nil?
+    image.exif_shutterspeed = exif_data.exposure_time.to_s
+  end
+  image.save
   redirect '/images'
 end
 
@@ -295,6 +317,29 @@ get '/recreate_image_versions' do
   if admin?
     Image.all.each do |image|
       puts image.file.recreate_versions!
+    end
+  end
+  redirect '/'
+end
+
+get '/update_exif' do
+  if admin?
+    Image.all.each do |image|
+      puts image.file.url
+      exif_data = EXIFR::JPEG.new(open(image.file.url))
+      if not exif_data.model.nil?
+        image.exif_model = exif_data.model.to_s
+      end
+      if not exif_data.iso_speed_ratings.nil?
+        image.exif_iso =  exif_data.iso_speed_ratings.to_s
+      end
+      if not exif_data.f_number.nil?
+        image.exif_aperture = exif_data.f_number.to_f.to_s
+      end
+      if not exif_data.exposure_time.nil?
+        image.exif_shutterspeed = exif_data.exposure_time.to_s
+      end
+      image.save
     end
   end
   redirect '/'
