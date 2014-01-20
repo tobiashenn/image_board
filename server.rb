@@ -248,9 +248,7 @@ post '/upload' do
     redirect '/images'
   end
   image = Image.create(:user => user, :file => params['myfile'], :posted_at => Time.now)
-  puts image.file.url
   exif_data = EXIFR::JPEG.new(open(image.file.url))
-  puts exif_data.model
   if not exif_data.model.nil?
     image.exif_model = exif_data.model.to_s
   end
