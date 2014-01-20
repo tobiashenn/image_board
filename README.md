@@ -40,17 +40,19 @@ The file should look similar to:
 	
 If you prefer to store the image files locally on your server you can change the storage setting in the Image model definition in `server.rb`, i.e.:
 
+	# server.rb
+	
 	class ImageUploader < CarrierWave::Uploader::Base
   	  storage :file
-  	  
   	  ...
-  	  
   	end
 
 ### (4) Signup code & general configuration
 
 I currently run the app invite-only and require new users to use a signup-code for registration. The signup-code and some more configuration (motst important the name of **your Amazon S3 bucket**) are currently stored in `config/config.yml`:
-
+	
+	# config/config.yml
+	
 	signup_code: 'mycode'
 	cookie_secret: 'mysecret'
 	S3bucket: 'myS3bucket'
