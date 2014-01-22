@@ -24,7 +24,7 @@ config_yaml = YAML.load_file('config/config.yml')
 
 CarrierWave.configure do |config|
   amazon_S3_config = YAML.load_file('config/fog_amazon_S3.yml')
-  config.fog_credentials = amazon_S3_config.inject({}){|acc, (k,v)| acc[k.to_sym] = v; acc}
+  config.fog_credentials = amazon_S3_config.inject({}){|result, (k,v)| result[k.to_sym] = v; result}
   config.fog_directory  = config_yaml['S3bucket']
 end
 
@@ -154,7 +154,11 @@ helpers do
       image.exif_aperture = exif_data.f_number.to_f.to_s
     end
     if not exif_data.exposure_time.nil?
-      image.exif_shutterspeed = exif_data.exposure_time.to_s
+      if (exif_data.exposure_time < 1)
+        image.exif_shutterspeed = exif_data.exposure_time.to_s
+      else
+        image.exif_shutterspeed = "%.1f" %[exif_data.exposure_time.to_f]
+      end
     end
     image.save
   end
