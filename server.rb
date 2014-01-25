@@ -14,6 +14,7 @@ require 'rinku'
 require 'yaml'
 require 'open-uri'
 require 'exifr'
+require 'securerandom'
 
 # CONFIGURATION
 set :server, :puma
@@ -37,8 +38,7 @@ end
 # STARTUP PROCEDURES
 puts "Engine started with Ruby Version #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}"
 CarrierWave.clean_cached_files!
-
-use Rack::Session::Cookie, :secret => config_yaml['cookie_secret']
+use Rack::Session::Cookie, :secret => SecureRandom.hex(64)
 DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/image_board.db")
 
 # MODELS

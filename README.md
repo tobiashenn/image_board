@@ -54,7 +54,6 @@ I currently run the app invite-only and require new users to use a signup-code f
 	# config/config.yml
 	
 	signup_code: 'mycode'
-	cookie_secret: 'mysecret'
 	S3bucket: 'myS3bucket'
 	
 ### (5) Start the server
