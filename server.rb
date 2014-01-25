@@ -79,6 +79,7 @@ class Image
   property :id, Serial
   property :posted_at, DateTime
   property :exif_model, String
+  property :exif_focallength, String
   property :exif_aperture, String
   property :exif_shutterspeed, String
   property :exif_iso, String
@@ -146,6 +147,9 @@ helpers do
     exif_data = EXIFR::JPEG.new(open(image.file.url))
     if not exif_data.model.nil?
       image.exif_model = exif_data.model.to_s
+    end
+    if not exif_data.focal_length.nil?
+      image.exif_focallength =  exif_data.focal_length.to_f.round.to_s
     end
     if not exif_data.iso_speed_ratings.nil?
       image.exif_iso =  exif_data.iso_speed_ratings.to_s

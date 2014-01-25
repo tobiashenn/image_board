@@ -11,6 +11,8 @@
 		%p
 			-if not @image.exif_model.nil?
 				="#{@image.exif_model},"
+			-if not @image.exif_focallength.nil?
+				="#{@image.exif_focallength}mm,"
 			-if not @image.exif_shutterspeed.nil?
 				="#{@image.exif_shutterspeed}s,"
 			-if not @image.exif_aperture.nil?
